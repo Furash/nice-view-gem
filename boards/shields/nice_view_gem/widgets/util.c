@@ -125,9 +125,13 @@ void canvas_draw_line(lv_obj_t *canvas, const lv_point_t points[], uint32_t poin
     lv_canvas_init_layer(canvas, &layer);
     
     /* LVGL 9 lv_draw_line only draws a single line between two points,
-     * so we need to loop through consecutive points to draw a polyline */
+     * so we need to loop through consecutive points to draw a polyline.
+     * The points are stored in the descriptor's p1 and p2 fields. */
+    lv_draw_line_dsc_t line_dsc = *dsc;
     for (uint32_t i = 0; i < point_cnt - 1; i++) {
-        lv_draw_line(layer.draw_ctx, dsc, &points[i], &points[i + 1]);
+        line_dsc.p1 = points[i];
+        line_dsc.p2 = points[i + 1];
+        lv_draw_line(&layer, &line_dsc);
     }
     
     lv_canvas_finish_layer(canvas, &layer);
