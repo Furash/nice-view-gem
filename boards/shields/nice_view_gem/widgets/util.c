@@ -117,10 +117,18 @@ void canvas_draw_rect(lv_obj_t *canvas, lv_coord_t x, lv_coord_t y, lv_coord_t w
 /* Helper function to draw line on canvas using LVGL 9 API */
 void canvas_draw_line(lv_obj_t *canvas, const lv_point_t points[], uint32_t point_cnt,
                       const lv_draw_line_dsc_t *dsc) {
+    if (point_cnt < 2) {
+        return; /* Need at least 2 points to draw a line */
+    }
+    
     lv_layer_t layer;
     lv_canvas_init_layer(canvas, &layer);
     
-    lv_draw_line(&layer, dsc, points, point_cnt);
+    /* LVGL 9 lv_draw_line only draws a single line between two points,
+     * so we need to loop through consecutive points to draw a polyline */
+    for (uint32_t i = 0; i < point_cnt - 1; i++) {
+        lv_draw_line(layer.draw_ctx, dsc, &points[i], &points[i + 1]);
+    }
     
     lv_canvas_finish_layer(canvas, &layer);
 }
