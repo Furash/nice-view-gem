@@ -57,7 +57,7 @@ static void battery_status_update_cb(struct battery_status_state state) {
 }
 
 static struct battery_status_state battery_status_get_state(const zmk_event_t *eh) {
-    const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
+    const struct zmk_battery_state_changed *ev = eh ? as_zmk_battery_state_changed(eh) : NULL;
 
     return (struct battery_status_state) {
         .level = (ev != NULL) ? ev->state_of_charge : zmk_battery_state_of_charge(),
@@ -79,7 +79,7 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
  * Peripheral status
  **/
 
-static struct peripheral_status_state get_state(const zmk_event_t *_eh) {
+static struct peripheral_status_state get_periph_state(const zmk_event_t *_eh) {
     return (struct peripheral_status_state){.connected = zmk_split_bt_peripheral_is_connected()};
 }
 
@@ -96,7 +96,7 @@ static void output_status_update_cb(struct peripheral_status_state state) {
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_peripheral_status, struct peripheral_status_state,
-                            output_status_update_cb, get_state)
+                            output_status_update_cb, get_periph_state)
 ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 
 /**
@@ -117,8 +117,8 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 
     sys_slist_append(&widgets, &widget->node);
 
-    // Initial draw
-    struct peripheral_status_state p_state = get_state(NULL);
+    // Initial peripheral draw
+    struct peripheral_status_state p_state = get_periph_state(NULL);
     set_connection_status(widget, p_state);
 
     struct battery_status_state b_state = battery_status_get_state(NULL);

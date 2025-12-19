@@ -17,6 +17,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     uint8_t *cbuf_u8 = (uint8_t *)cbuf;
 
     memcpy(cbuf_tmp, cbuf_u8, 620);
+    // Clear rotation target area (offset 8 skip palette)
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
     // Manual 90-degree CW rotation for 1-bit indexed format
@@ -27,21 +28,23 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
             // Get source bit
             bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
 
-            // 90 CW: dx = (67) - y, dy = x
-            int dx = (BUFFER_SIZE - 1) - y;
-            int dy = x;
-            uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
-
             if (bit) {
+                // 90 CW: dx = (67) - y, dy = x
+                int dx = (BUFFER_SIZE - 1) - y;
+                int dy = x;
+                uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
                 dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
-            } else {
-                dest_row[dx >> 3] &= ~(1 << (7 - (dx & 0x07)));
             }
         }
     }
 }
 
-void fill_background(lv_obj_t *canvas) { lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER); }
+void fill_background(lv_obj_t *canvas) {
+    // Standardizing on Index 0 as Black Background.
+    // Index 0 in 1-bit format typically corresponds to 0 bits.
+    // Use LVGL API for safety, but avoid calling during init chain.
+    lv_canvas_fill_bg(canvas, lv_color_hex(0x000000), LV_OPA_COVER);
+}
 
 /* Helper function to draw text on canvas using LVGL 9 API */
 void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, const void *dsc,
@@ -118,10 +121,10 @@ void canvas_draw_line(lv_obj_t *canvas, const lv_point_precise_t points[], uint3
 
     lv_draw_line_dsc_t line_dsc = *(const lv_draw_line_dsc_t *)dsc;
     for (uint32_t i = 0; i < point_cnt - 1; i++) {
-        line_dsc.p1.x = points[i].x;
-        line_dsc.p1.y = points[i].y;
-        line_dsc.p2.x = points[i + 1].x;
-        line_dsc.p2.y = points[i + 1].y;
+        line_dsc.p1.x = (int32_t)points[i].x;
+        line_dsc.p1.y = (int32_t)points[i].y;
+        line_dsc.p2.x = (int32_t)points[i + 1].x;
+        line_dsc.p2.y = (int32_t)points[i + 1].y;
         lv_draw_line(&layer, &line_dsc);
     }
 

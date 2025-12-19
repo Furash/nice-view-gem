@@ -86,7 +86,7 @@ static void battery_status_update_cb(struct battery_status_state state) {
 }
 
 static struct battery_status_state battery_status_get_state(const zmk_event_t *eh) {
-    const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
+    const struct zmk_battery_state_changed *ev = eh ? as_zmk_battery_state_changed(eh) : NULL;
 
     return (struct battery_status_state) {
         .level = (ev != NULL) ? ev->state_of_charge : zmk_battery_state_of_charge(),
@@ -223,6 +223,13 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     lv_canvas_set_palette(bottom, 1, lv_color_to_32(lv_color_hex(0xffffff), LV_OPA_COVER));
 
     sys_slist_append(&widgets, &widget->node);
+
+    // Initial draw to populate buffers
+    struct battery_status_state b_state = battery_status_get_state(NULL);
+    set_battery_status(widget, b_state);
+
+    struct output_status_state o_state = output_status_get_state(NULL);
+    set_output_status(widget, &o_state);
 
     widget_battery_status_init();
     widget_layer_status_init();
