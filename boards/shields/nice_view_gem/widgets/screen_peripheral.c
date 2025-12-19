@@ -110,8 +110,8 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     lv_obj_t *top = lv_canvas_create(widget->obj);
     lv_obj_align(top, LV_ALIGN_TOP_RIGHT, 0, 0);
     lv_canvas_set_buffer(top, widget->cbuf, BUFFER_SIZE, BUFFER_SIZE, LV_COLOR_FORMAT_I1);
-    lv_canvas_set_palette(top, 0, lv_color_to_32(lv_color_hex(0x000000), LV_OPA_COVER));
-    lv_canvas_set_palette(top, 1, lv_color_to_32(lv_color_hex(0xffffff), LV_OPA_COVER));
+    lv_canvas_set_palette(top, 0, lv_color_to_32(lv_color_hex(0xffffff), LV_OPA_COVER));
+    lv_canvas_set_palette(top, 1, lv_color_to_32(lv_color_hex(0x000000), LV_OPA_COVER));
 
     draw_animation(widget->obj);
 
