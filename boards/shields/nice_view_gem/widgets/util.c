@@ -19,14 +19,19 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     memcpy(cbuf_tmp, cbuf_u8, 620);
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    // CCW: dx = y, dy = 67 - x
+    // Manual 90-degree CW rotation for 1-bit indexed format
+    // Src(x, y) -> Dest(BUFFER_SIZE - 1 - y, x)
     for (int y = 0; y < BUFFER_SIZE; y++) {
         uint8_t *src_row = &cbuf_tmp[8 + (y * stride)];
         for (int x = 0; x < BUFFER_SIZE; x++) {
+            // Get source bit
             bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
-            int dx = y;
-            int dy = (BUFFER_SIZE - 1) - x;
+
+            // 90 CW: dx = (67) - y, dy = x
+            int dx = (BUFFER_SIZE - 1) - y;
+            int dy = x;
             uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
+
             if (bit) {
                 dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
             } else {
