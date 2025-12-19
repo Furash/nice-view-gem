@@ -59,7 +59,7 @@ static void battery_status_update_cb(struct battery_status_state state) {
 static struct battery_status_state battery_status_get_state(const zmk_event_t *eh) {
     const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
 
-    return (struct battery_status_state){
+    return (struct battery_status_state) {
         .level = (ev != NULL) ? ev->state_of_charge : zmk_battery_state_of_charge(),
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
         .usb_present = zmk_usb_is_powered(),
@@ -109,7 +109,9 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 
     lv_obj_t *top = lv_canvas_create(widget->obj);
     lv_obj_align(top, LV_ALIGN_TOP_RIGHT, 0, 0);
-    lv_canvas_set_buffer(top, widget->cbuf, BUFFER_SIZE, BUFFER_SIZE, LV_COLOR_FORMAT_NATIVE);
+    lv_canvas_set_buffer(top, widget->cbuf, BUFFER_SIZE, BUFFER_SIZE, LV_COLOR_FORMAT_I1);
+    lv_canvas_set_palette(top, 0, lv_color_hex(0xffffff));
+    lv_canvas_set_palette(top, 1, lv_color_hex(0x000000));
 
     draw_animation(widget->obj);
 

@@ -10,7 +10,7 @@ void to_uppercase(char *str) {
 }
 
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-    static lv_color_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE];
+    static lv_color_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE + 8];
     memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
 
     lv_color_format_t cf = lv_display_get_color_format(lv_obj_get_display(canvas));
