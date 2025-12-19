@@ -40,14 +40,14 @@ static void draw_needle(lv_obj_t *canvas, const struct status_state *state) {
     if (value > max)
         value = max;
 
-    float radius = 25.45585;
-    float angleDeg = 225 + ((float)value / max) * 90;
-    float angleRad = angleDeg * (3.14159 / 180.0f);
+    float radius = 25.45585f;
+    float angleDeg = 225.0f + ((float)value / max) * 90.0f;
+    float angleRad = angleDeg * (3.14159f / 180.0f);
 
-    int needleStartX = centerX + (int)(offset * cos(angleRad));
-    int needleStartY = centerY + (int)(offset * sin(angleRad));
-    int needleEndX = centerX + (int)(radius * cos(angleRad));
-    int needleEndY = centerY + (int)(radius * sin(angleRad));
+    int needleStartX = centerX + (int)(offset * cosf(angleRad));
+    int needleStartY = centerY + (int)(offset * sinf(angleRad));
+    int needleEndX = centerX + (int)(radius * cosf(angleRad));
+    int needleEndY = centerY + (int)(radius * sinf(angleRad));
 
     lv_point_precise_t points[2] = {{needleStartX, needleStartY}, {needleEndX, needleEndY}};
     canvas_draw_line(canvas, points, 2, &line_dsc);
