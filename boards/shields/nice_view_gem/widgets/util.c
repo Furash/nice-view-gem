@@ -2,6 +2,8 @@
 #include "util.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 void to_uppercase(char *str) {
     for (int i = 0; str[i] != '\0'; i++) {
@@ -10,36 +12,34 @@ void to_uppercase(char *str) {
 }
 
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-    static lv_color_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE + 8];
-    memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
+    static uint8_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE + 8];
+    uint8_t *cbuf_u8 = (uint8_t *)cbuf;
+    memcpy(cbuf_tmp, cbuf_u8, sizeof(cbuf_tmp));
 
-    lv_color_format_t cf = lv_display_get_color_format(lv_obj_get_display(canvas));
-    uint32_t stride = lv_draw_buf_width_to_stride(BUFFER_SIZE, cf);
+    // For LV_COLOR_FORMAT_I1, stride is (width + 7) / 8
+    uint32_t stride = (BUFFER_SIZE + 7) / 8;
 
-    lv_img_dsc_t img;
-    img.data = (void *)cbuf_tmp;
-    img.header.cf = cf;
-    img.header.w = BUFFER_SIZE;
-    img.header.h = BUFFER_SIZE;
-    img.header.stride = stride;
-    img.data_size = stride * BUFFER_SIZE + 8;
+    // Clear pixel data in cbuf (excluding palette)
+    memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
+    // Manual 90-degree CW rotation for 1-bit indexed format
+    for (int y = 0; y < BUFFER_SIZE; y++) {
+        for (int x = 0; x < BUFFER_SIZE; x++) {
+            // Get source bit at (x, y) from cbuf_tmp
+            uint32_t src_byte_idx = 8 + (y * stride) + (x / 8);
+            uint8_t src_bit_idx = 7 - (x % 8);
+            bool bit = (cbuf_tmp[src_byte_idx] >> src_bit_idx) & 0x01;
 
-    lv_layer_t layer;
-    lv_canvas_init_layer(canvas, &layer);
-
-    lv_draw_image_dsc_t img_dsc;
-    lv_draw_image_dsc_init(&img_dsc);
-    img_dsc.src = &img;
-    img_dsc.rotation = 900; /* 90 degrees in 0.1 degree units */
-    img_dsc.pivot.x = BUFFER_SIZE / 2;
-    img_dsc.pivot.y = BUFFER_SIZE / 2;
-
-    lv_area_t coords = {0, 0, BUFFER_SIZE - 1, BUFFER_SIZE - 1};
-    lv_draw_image(&layer, &img_dsc, &coords);
-
-    lv_canvas_finish_layer(canvas, &layer);
+            if (bit) {
+                // Set dest bit at (y, BUFFER_SIZE - 1 - x) in cbuf
+                int dx = y;
+                int dy = BUFFER_SIZE - 1 - x;
+                uint32_t dest_byte_idx = 8 + (dy * stride) + (dx / 8);
+                uint8_t dest_bit_idx = 7 - (dx % 8);
+                cbuf_u8[dest_byte_idx] |= (1 << dest_bit_idx);
+            }
+        }
+    }
 }
 
 void fill_background(lv_obj_t *canvas) {
