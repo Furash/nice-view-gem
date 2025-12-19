@@ -19,19 +19,14 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     memcpy(cbuf_tmp, cbuf_u8, 620);
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    // Manual 180-degree rotation for 1-bit indexed format
-    // Src(x, y) -> Dest(BUFFER_SIZE - 1 - x, BUFFER_SIZE - 1 - y)
+    // CCW: dx = y, dy = 67 - x
     for (int y = 0; y < BUFFER_SIZE; y++) {
         uint8_t *src_row = &cbuf_tmp[8 + (y * stride)];
         for (int x = 0; x < BUFFER_SIZE; x++) {
-            // Get source bit
             bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
-
-            // 180 flip: dx = (67) - x, dy = (67) - y
-            int dx = (BUFFER_SIZE - 1) - x;
-            int dy = (BUFFER_SIZE - 1) - y;
+            int dx = y;
+            int dy = (BUFFER_SIZE - 1) - x;
             uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
-
             if (bit) {
                 dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
             } else {
@@ -41,12 +36,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     }
 }
 
-void fill_background(lv_obj_t *canvas) {
-    void *cbuf = lv_canvas_get_buffer(canvas);
-    if (cbuf) {
-        memset((uint8_t *)cbuf + 8, 0, 9 * 68);
-    }
-}
+void fill_background(lv_obj_t *canvas) { lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER); }
 
 /* Helper function to draw text on canvas using LVGL 9 API */
 void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, const void *dsc,
