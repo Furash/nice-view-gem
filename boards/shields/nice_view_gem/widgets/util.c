@@ -12,31 +12,30 @@ void to_uppercase(char *str) {
 }
 
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-    static uint8_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE + 8];
+    // Stride for 68 pixels I1 is 9 bytes
+    const uint32_t stride = 9;
+    static uint8_t cbuf_tmp[620]; // (9 * 68) + 8 = 620
     uint8_t *cbuf_u8 = (uint8_t *)cbuf;
-    memcpy(cbuf_tmp, cbuf_u8, sizeof(cbuf_tmp));
 
-    // For LV_COLOR_FORMAT_I1, stride is (width + 7) / 8
-    uint32_t stride = (BUFFER_SIZE + 7) / 8;
+    // Copy current buffer (palette + pixels) to tmp
+    memcpy(cbuf_tmp, cbuf_u8, 620);
 
-    // Clear pixel data in cbuf (excluding palette)
+    // Clear pixel data in dest (0 is normally background index)
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    // Manual 90-degree CW rotation for 1-bit indexed format
+    // Manual 90-degree CCW rotation for 1-bit indexed format
+    // Src(x, y) -> Dest(y, BUFFER_SIZE - 1 - x)
     for (int y = 0; y < BUFFER_SIZE; y++) {
+        uint8_t *src_row = &cbuf_tmp[8 + (y * stride)];
         for (int x = 0; x < BUFFER_SIZE; x++) {
-            // Get source bit at (x, y) from cbuf_tmp
-            uint32_t src_byte_idx = 8 + (y * stride) + (x / 8);
-            uint8_t src_bit_idx = 7 - (x % 8);
-            bool bit = (cbuf_tmp[src_byte_idx] >> src_bit_idx) & 0x01;
-
+            // Get source bit
+            bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
             if (bit) {
-                // Set dest bit at (y, BUFFER_SIZE - 1 - x) in cbuf
+                // CCW: dx = y, dy = (BUFFER_SIZE-1) - x
                 int dx = y;
-                int dy = BUFFER_SIZE - 1 - x;
-                uint32_t dest_byte_idx = 8 + (dy * stride) + (dx / 8);
-                uint8_t dest_bit_idx = 7 - (dx % 8);
-                cbuf_u8[dest_byte_idx] |= (1 << dest_bit_idx);
+                int dy = (BUFFER_SIZE - 1) - x;
+                uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
+                dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
             }
         }
     }
