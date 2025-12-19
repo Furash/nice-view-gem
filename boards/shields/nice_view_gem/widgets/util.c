@@ -49,8 +49,9 @@ void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, con
     lv_layer_t layer;
     lv_canvas_init_layer(canvas, &layer);
 
-    lv_draw_label_dsc_t label_dsc = *(const lv_draw_label_dsc_t *)dsc;
-    label_dsc.text = txt;
+    const lv_draw_label_dsc_t *label_dsc = (const lv_draw_label_dsc_t *)dsc;
+    lv_draw_label_dsc_t draw_dsc = *label_dsc;
+    draw_dsc.text = txt;
 
     lv_area_t coords;
     coords.x1 = x;
@@ -58,7 +59,7 @@ void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, con
     coords.x2 = x + max_w - 1;
     coords.y2 = y + 100; /* Large enough height */
 
-    lv_draw_label(&layer, &label_dsc, &coords);
+    lv_draw_label(&layer, &draw_dsc, &coords);
 
     lv_canvas_finish_layer(canvas, &layer);
 }
@@ -115,17 +116,12 @@ void canvas_draw_line(lv_obj_t *canvas, const lv_point_precise_t points[], uint3
     lv_layer_t layer;
     lv_canvas_init_layer(canvas, &layer);
 
-    /* LVGL 9 lv_draw_line only draws a single line between two points,
-     * so we need to loop through consecutive points to draw a polyline.
-     * The points are stored in the descriptor's p1 and p2 fields.
-     * Note: lv_draw_line_dsc_t uses lv_point_t (integer), so we convert
-     * from lv_point_precise_t (float) by rounding. */
     lv_draw_line_dsc_t line_dsc = *(const lv_draw_line_dsc_t *)dsc;
     for (uint32_t i = 0; i < point_cnt - 1; i++) {
-        line_dsc.p1.x = (int32_t)points[i].x;
-        line_dsc.p1.y = (int32_t)points[i].y;
-        line_dsc.p2.x = (int32_t)points[i + 1].x;
-        line_dsc.p2.y = (int32_t)points[i + 1].y;
+        line_dsc.p1.x = points[i].x;
+        line_dsc.p1.y = points[i].y;
+        line_dsc.p2.x = points[i + 1].x;
+        line_dsc.p2.y = points[i + 1].y;
         lv_draw_line(&layer, &line_dsc);
     }
 

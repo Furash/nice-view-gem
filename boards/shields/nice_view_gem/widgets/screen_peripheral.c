@@ -116,6 +116,14 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     draw_animation(widget->obj);
 
     sys_slist_append(&widgets, &widget->node);
+
+    // Initial draw
+    struct peripheral_status_state p_state = get_state(NULL);
+    set_connection_status(widget, p_state);
+
+    struct battery_status_state b_state = battery_status_get_state(NULL);
+    set_battery_status(widget, b_state);
+
     widget_battery_status_init();
     widget_peripheral_status_init();
 
