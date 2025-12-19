@@ -22,7 +22,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     img.header.w = BUFFER_SIZE;
     img.header.h = BUFFER_SIZE;
     img.header.stride = stride;
-    img.data_size = stride * BUFFER_SIZE;
+    img.data_size = stride * BUFFER_SIZE + 8;
 
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 
