@@ -224,13 +224,6 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 
     sys_slist_append(&widgets, &widget->node);
 
-    // Initial updates
-    struct battery_status_state b_state = battery_status_get_state(NULL);
-    set_battery_status(widget, b_state);
-
-    struct output_status_state o_state = output_status_get_state(NULL);
-    set_output_status(widget, &o_state);
-
     widget_battery_status_init();
     widget_layer_status_init();
     widget_output_status_init();
