@@ -49,7 +49,7 @@ static void draw_needle(lv_obj_t *canvas, const struct status_state *state) {
     int needleEndX = centerX + (int)(radius * cos(angleRad));
     int needleEndY = centerY + (int)(radius * sin(angleRad));
 
-    lv_point_t points[2] = {{needleStartX, needleStartY}, {needleEndX, needleEndY}};
+    lv_point_precise_t points[2] = {{needleStartX, needleStartY}, {needleEndX, needleEndY}};
     canvas_draw_line(canvas, points, 2, &line_dsc);
 }
 
@@ -63,7 +63,7 @@ static void draw_grid(lv_obj_t *canvas) {
 static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
     lv_draw_line_dsc_t line_dsc;
     init_line_dsc(&line_dsc, LVGL_FOREGROUND, 2);
-    lv_point_t points[10];
+    lv_point_precise_t points[10];
 
     int baselineY = 97 + BUFFER_OFFSET_MIDDLE;
 

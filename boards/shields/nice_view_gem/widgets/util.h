@@ -44,5 +44,5 @@ void canvas_draw_img(lv_obj_t *canvas, lv_coord_t x, lv_coord_t y, const void *s
                      const lv_draw_image_dsc_t *dsc);
 void canvas_draw_rect(lv_obj_t *canvas, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_coord_t h,
                       const lv_draw_rect_dsc_t *dsc);
-void canvas_draw_line(lv_obj_t *canvas, const lv_point_t points[], uint32_t point_cnt,
+void canvas_draw_line(lv_obj_t *canvas, const lv_point_precise_t points[], uint32_t point_cnt,
                       const lv_draw_line_dsc_t *dsc);
