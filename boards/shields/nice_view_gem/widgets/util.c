@@ -12,13 +12,16 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     static lv_color_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE];
     memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
 
+    lv_color_format_t cf = lv_canvas_get_color_format(canvas);
+    uint32_t stride = lv_draw_buf_width_to_stride(BUFFER_SIZE, cf);
+
     lv_img_dsc_t img;
     img.data = (void *)cbuf_tmp;
-    img.header.cf = LV_COLOR_FORMAT_NATIVE;
+    img.header.cf = cf;
     img.header.w = BUFFER_SIZE;
     img.header.h = BUFFER_SIZE;
-    img.header.stride = BUFFER_SIZE * sizeof(lv_color_t);
-    img.data_size = BUFFER_SIZE * BUFFER_SIZE * sizeof(lv_color_t);
+    img.header.stride = stride;
+    img.data_size = stride * BUFFER_SIZE;
 
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 
