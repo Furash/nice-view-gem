@@ -23,17 +23,17 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     // Clear pixel data in dest (0 is normally background index)
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    // Manual 90-degree CCW rotation for 1-bit indexed format
-    // Src(x, y) -> Dest(y, BUFFER_SIZE - 1 - x)
+    // Manual 90-degree CW rotation for 1-bit indexed format
+    // Src(x, y) -> Dest(BUFFER_SIZE - 1 - y, x)
     for (int y = 0; y < BUFFER_SIZE; y++) {
         uint8_t *src_row = &cbuf_tmp[8 + (y * stride)];
         for (int x = 0; x < BUFFER_SIZE; x++) {
             // Get source bit
             bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
             if (bit) {
-                // CCW: dx = y, dy = (BUFFER_SIZE-1) - x
-                int dx = y;
-                int dy = (BUFFER_SIZE - 1) - x;
+                // CW: dx = (BUFFER_SIZE-1) - y, dy = x
+                int dx = (BUFFER_SIZE - 1) - y;
+                int dy = x;
                 uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
                 dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
             }
@@ -41,18 +41,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     }
 }
 
-void fill_background(lv_obj_t *canvas) {
-    lv_layer_t layer;
-    lv_canvas_init_layer(canvas, &layer);
-
-    lv_draw_rect_dsc_t rect_black_dsc;
-    init_rect_dsc(&rect_black_dsc, LVGL_BACKGROUND);
-
-    lv_area_t coords = {0, 0, BUFFER_SIZE - 1, BUFFER_SIZE - 1};
-    lv_draw_rect(&layer, &rect_black_dsc, &coords);
-
-    lv_canvas_finish_layer(canvas, &layer);
-}
+void fill_background(lv_obj_t *canvas) { lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER); }
 
 /* Helper function to draw text on canvas using LVGL 9 API */
 void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, const void *dsc,
