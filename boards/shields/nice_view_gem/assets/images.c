@@ -1,6 +1,5 @@
+#include <zephyr/kernel.h>
 #include <lvgl.h>
-#include <lv_api_map.h>
-#include <draw/lv_draw.h>
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
 #define LV_ATTRIBUTE_MEM_ALIGN

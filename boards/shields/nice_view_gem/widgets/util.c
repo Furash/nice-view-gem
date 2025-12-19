@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 #include "util.h"
 #include <ctype.h>
+#include <string.h>
 
 void to_uppercase(char *str) {
     for (int i = 0; str[i] != '\0'; i++) {
@@ -12,7 +13,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     static lv_color_t cbuf_tmp[BUFFER_SIZE * BUFFER_SIZE];
     memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
 
-    lv_color_format_t cf = lv_canvas_get_color_format(canvas);
+    lv_color_format_t cf = lv_display_get_color_format(lv_obj_get_display(canvas));
     uint32_t stride = lv_draw_buf_width_to_stride(BUFFER_SIZE, cf);
 
     lv_img_dsc_t img;
