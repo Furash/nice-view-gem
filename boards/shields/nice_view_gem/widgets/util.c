@@ -12,40 +12,34 @@ void to_uppercase(char *str) {
 }
 
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-    // Stride for 68 pixels I1 is 9 bytes
     const uint32_t stride = 9;
-    static uint8_t cbuf_tmp[620]; // (9 * 68) + 8 = 620
+    static uint8_t cbuf_tmp[620];
     uint8_t *cbuf_u8 = (uint8_t *)cbuf;
 
-    // Copy current buffer (palette + pixels) to tmp
     memcpy(cbuf_tmp, cbuf_u8, 620);
-
-    // Clear pixel data in dest (0 is normally background index)
     memset(cbuf_u8 + 8, 0, stride * BUFFER_SIZE);
 
-    // Manual 90-degree CW rotation for 1-bit indexed format
-    // Src(x, y) -> Dest(BUFFER_SIZE - 1 - y, x)
+    // CW: dx = (67) - y, dy = x
     for (int y = 0; y < BUFFER_SIZE; y++) {
         uint8_t *src_row = &cbuf_tmp[8 + (y * stride)];
         for (int x = 0; x < BUFFER_SIZE; x++) {
-            // Get source bit
             bool bit = (src_row[x >> 3] >> (7 - (x & 0x07))) & 0x01;
-
-            // CW: dx = (BUFFER_SIZE-1) - y, dy = x
             int dx = (BUFFER_SIZE - 1) - y;
             int dy = x;
             uint8_t *dest_row = &cbuf_u8[8 + (dy * stride)];
-
             if (bit) {
                 dest_row[dx >> 3] |= (1 << (7 - (dx & 0x07)));
-            } else {
-                dest_row[dx >> 3] &= ~(1 << (7 - (dx & 0x07)));
             }
         }
     }
 }
 
-void fill_background(lv_obj_t *canvas) { lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER); }
+void fill_background(lv_obj_t *canvas) {
+    void *cbuf = lv_canvas_get_buffer(canvas);
+    if (cbuf) {
+        memset((uint8_t *)cbuf + 8, 0, 9 * 68);
+    }
+}
 
 /* Helper function to draw text on canvas using LVGL 9 API */
 void canvas_draw_text(lv_obj_t *canvas, int32_t x, int32_t y, int32_t max_w, const void *dsc,
@@ -95,10 +89,6 @@ void canvas_draw_img(lv_obj_t *canvas, int32_t x, int32_t y, const void *src, co
 /* Helper function to draw rectangle on canvas using LVGL 9 API */
 void canvas_draw_rect(lv_obj_t *canvas, int32_t x, int32_t y, int32_t w, int32_t h,
                       const void *dsc) {
-    lv_canvas_set_buffer(canvas, NULL, BUFFER_SIZE, BUFFER_SIZE,
-                         LV_COLOR_FORMAT_I1); // Assuming 'canvas' is the target object
-    lv_canvas_set_palette(canvas, 0, lv_color_to_32(lv_color_hex(0x000000), LV_OPA_COVER));
-    lv_canvas_set_palette(canvas, 1, lv_color_to_32(lv_color_hex(0xffffff), LV_OPA_COVER));
     lv_layer_t layer;
     lv_canvas_init_layer(canvas, &layer);
 
